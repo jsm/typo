@@ -92,7 +92,7 @@ class Admin::ContentController < Admin::BaseController
     @article.text_filter = current_user.text_filter if current_user.simple_editor?
 
     get_fresh_or_existing_draft_for_article
-    
+
     @article.attributes = params[:article]
     @article.published = false
     set_article_author
@@ -111,6 +111,27 @@ class Admin::ContentController < Admin::BaseController
       return true
     end
     render :text => nil
+  end
+
+  def merge_article
+    id = params[:id]
+    id = params[:article][:id] if params[:article] && params[:article][:id]
+    article = Article.get_or_build_article(id)
+    article_to_merge = Article.find(params[:merge_article_id])
+    article_to_merge.comments.each { |comment| comment.update_attribute(:article_id, article.id) }
+
+    article_body = article.body.split(/\n/)
+    article_to_merge_body = article_to_merge.body.split("\n")
+    article_body.concat(article_to_merge_body)
+    article_body.uniq!
+
+    article.body = article_body.join("\n")
+
+    article.save!
+    Article.destroy(article_to_merge.id)
+
+
+    redirect_to :action => 'edit', :id => id
   end
 
   protected
@@ -240,4 +261,5 @@ class Admin::ContentController < Admin::BaseController
   def setup_resources
     @resources = Resource.by_created_at
   end
+
 end
