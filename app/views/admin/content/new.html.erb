@@ -1,10 +1,12 @@
 <% @page_heading = _('New article') %>
+
+<%= render "admin/shared/edit", { :form_type => "article", :form_action => { :action => "new", :id => @article.id , :class => ('autosave')} } %>
+
 <% if current_user.admin? %>
+    <h2>Merge Articles</h2>
     <%= form_tag(url_for(:controller => "admin/content", :only_path => false, :action => :merge_article, :id =>
             @article.id), :id => "merge_article_form") do %>
         <input id='merge-article-id' type='text' name='merge_with' placeholder="ID of Article to merge">
-        <input id='merge-article' type="submit" value="Merge Articles" class='btn danger' />
+        <input id='merge-article' type="submit" value="Merge" class='btn danger' />
     <% end %>
 <% end %>
-
-<%= render "admin/shared/edit", { :form_type => "article", :form_action => { :action => "new", :id => @article.id , :class => ('autosave')} } %>

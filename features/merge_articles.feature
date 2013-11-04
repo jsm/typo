@@ -28,7 +28,7 @@ Feature: Merge Articles
     And I am editing "Article A"
     Then I should see element with id "merge-article"
     When I enter "Article B"'s ID into "merge-article-id"
-    And I press "Merge Articles"
+    And I press "Merge"
     Then I should be editing "Article A"
     And "Article A" should have a title of "Article A"
     And "Article A" should have an author of "author1"
