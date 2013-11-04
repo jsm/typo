@@ -33,20 +33,34 @@ World(WithinHelpers)
 
 Given /^the blog is set up$/ do
   Blog.default.update_attributes!({:blog_name => 'Teh Blag',
-                                   :base_url => 'http://localhost:3000'});
+      :base_url => 'http://localhost:3000'});
   Blog.default.save!
-  User.create!({:login => 'admin',
-                :password => 'aaaaaaaa',
-                :email => 'joe@snow.com',
-                :profile_id => 1,
-                :name => 'admin',
-                :state => 'active'})
+  User.create!({
+      :login => 'admin',
+      :password => 'aaaaaaaa',
+      :email => 'joe@snow.com',
+      :profile_id => 1,
+      :name => 'admin',
+      :state => 'active'
+    })
 end
 
-And /^I am logged into the admin panel$/ do
+Given /^I am logged into the admin panel$/ do
   visit '/accounts/login'
   fill_in 'user_login', :with => 'admin'
   fill_in 'user_password', :with => 'aaaaaaaa'
+  click_button 'Login'
+  if page.respond_to? :should
+    page.should have_content('Login successful')
+  else
+    assert page.has_content?('Login successful')
+  end
+end
+
+Given /^I am logged in as "(.*)"$/ do |login|
+  visit '/accounts/login'
+  fill_in 'user_login', :with => login
+  fill_in 'user_password', :with => "password"
   click_button 'Login'
   if page.respond_to? :should
     page.should have_content('Login successful')
@@ -250,7 +264,7 @@ Then /^the "([^"]*)" checkbox(?: within (.*))? should not be checked$/ do |label
     end
   end
 end
- 
+
 Then /^(?:|I )should be on (.+)$/ do |page_name|
   current_path = URI.parse(current_url).path
   if current_path.respond_to? :should
@@ -264,8 +278,8 @@ Then /^(?:|I )should have the following query string:$/ do |expected_pairs|
   query = URI.parse(current_url).query
   actual_params = query ? CGI.parse(query) : {}
   expected_params = {}
-  expected_pairs.rows_hash.each_pair{|k,v| expected_params[k] = v.split(',')} 
-  
+  expected_pairs.rows_hash.each_pair{|k,v| expected_params[k] = v.split(',')}
+
   if actual_params.respond_to? :should
     actual_params.should == expected_params
   else
@@ -275,4 +289,27 @@ end
 
 Then /^show me the page$/ do
   save_and_open_page
+end
+
+Then /^I should see element with id "(.+)"$/ do |selector|
+  page.should have_selector("#" << selector)
+end
+
+Then /^I should not see element with id "(.+)"$/ do |selector|
+  page.should_not have_selector("#" << selector)
+end
+
+Given /^I am editing "(.+)"$/ do |content_title|
+  content = Content.find_by_title(content_title)
+  visit "/admin/content/edit/#{content.id}"
+end
+
+When /^I enter "(.+)"'s ID into "(.+)"$/ do |content_title, selector|
+  content = Content.find_by_title(content_title)
+  fill_in(selector, :with => content.id.to_s)
+end
+
+Then /^I should be editing "(.*?)"$/ do |content_title|
+  content = Content.find_by_title(content_title)
+  current_path.should == "/admin/content/edit/#{content.id}"
 end
