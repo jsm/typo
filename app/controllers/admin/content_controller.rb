@@ -117,7 +117,7 @@ class Admin::ContentController < Admin::BaseController
     id = params[:id]
     id = params[:article][:id] if params[:article] && params[:article][:id]
     article = Article.get_or_build_article(id)
-    article_to_merge = Article.find(params[:merge_article_id])
+    article_to_merge = Article.find(params[:merge_with])
     article_to_merge.comments.each { |comment| comment.update_attribute(:article_id, article.id) }
 
     article_body = article.body.split(/\n/)
